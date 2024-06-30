@@ -1,14 +1,6 @@
 from flask import Flask, request, jsonify
-import torch
-import torch.nn as nn
-
-class SimpleModel(nn.Module):
-    def __init__(self):
-        super(SimpleModel, self).__init__()
-        self.fc = nn.Linear(5, 1)
-    
-    def forward(self, x):
-        return self.fc(x)
+import onnxruntime as ort
+import numpy as np
 
 app = Flask(__name__)
 
@@ -16,14 +8,19 @@ app = Flask(__name__)
 
 def predict_api():
     try:
+        model_path = 'model0.onnx'
+        session = ort.InferenceSession(model_path)
+
         input_json = request.get_json()
+        batch_size = input_json['batch_size']
+        input_tensor = np.random.rand(batch_size, 3, 64, 64).astype(np.float32)
 
-        model = torch.load('simple_model_full.pth')
-        model.eval()
+        input_name = session.get_inputs()[0].name
+        output_name = session.get_outputs()[0].name
 
-        input_data = torch.tensor(input_json['data'])
-        output = model(input_data)
-        return jsonify({'result': output.item()})
+        outputs = session.run([output_name], {input_name: input_tensor})
+
+        return jsonify({'result': outputs[0].tolist()})
 
     except Exception as e:
         return jsonify({'error': str(e)})
