@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY . /app
 
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5000
+EXPOSE 5555
 
-CMD ["flask", "run", "--host", "0.0.0.0"]
+CMD ["python", "app.py"]

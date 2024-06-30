@@ -1,5 +1,14 @@
 from flask import Flask, request, jsonify
 import torch
+import torch.nn as nn
+
+class SimpleModel(nn.Module):
+    def __init__(self):
+        super(SimpleModel, self).__init__()
+        self.fc = nn.Linear(5, 1)
+    
+    def forward(self, x):
+        return self.fc(x)
 
 app = Flask(__name__)
 
@@ -18,3 +27,6 @@ def predict_api():
 
     except Exception as e:
         return jsonify({'error': str(e)})
+    
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5555)
